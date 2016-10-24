@@ -7,8 +7,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{F8A20DAC-2F1F-4ADB-9F93-7EF1FA75DB18}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>iosample</RootNamespace>
-    <AssemblyName>io-sample</AssemblyName>
+    <RootNamespace>RaspberryDroneDriver</RootNamespace>
+    <AssemblyName>raspberry-drone-driver</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
