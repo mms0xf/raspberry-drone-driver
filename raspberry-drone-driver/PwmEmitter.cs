@@ -16,10 +16,10 @@ public class PwmEmitter : IDisposable
 	public PwmEmitter( Action<bool,int> onUpdate, float dutyRate=1f )
 	{
 		this.onUpdate = onUpdate;
-		Reset ( dutyRate );
+		SetDutyRate ( dutyRate );
 	}
 
-	public void Reset( float dutyRate )
+	public void SetDutyRate( float dutyRate )
 	{
 		int threshold = (int)Math.Max (0f, dutyRate * pulasResolution);
 		int elapsedCount = 0;
@@ -47,6 +47,12 @@ public class PwmEmitter : IDisposable
 	public void Dispose ()
 	{
 		timer.Dispose ();
+	}
+
+	public void StartEmit( float dutyRate )
+	{
+		SetDutyRate (dutyRate);
+		StartEmit();
 	}
 
 	public void StartEmit()

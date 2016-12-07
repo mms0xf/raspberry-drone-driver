@@ -4,100 +4,66 @@ using System;
 
 class TankDriver
 {
-	DualWheelDriver dualWheel;
-	PwmEmitter pwm;
-	Action<int> onTirigger;
+	DualWheelPwmDriver dualWheel;
+	Thlottle leftThlottle;
+	Thlottle rightThlottle;
 
-	ThlottleChain thlottleChain;
+	public int power{ get{ return leftThlottle.level; } }
 
-	public int power{ get{ return thlottleChain.level; } }
-
-	public TankDriver( DualWheelDriver dualWheel )
+	public TankDriver( DualWheelPwmDriver dualWheel )
 	{
 		this.dualWheel = dualWheel;
-
-		pwm = new PwmEmitter ( (state,count)=>{
-			if( state )
-				onTirigger?.Invoke( count );
-			else
-				dualWheel.Free();
-		} );
-
-		thlottleChain = new ThlottleChain ();
-	}
-		
-	public void Idle()
-	{
-		thlottleChain.Reset ();
-
-		pwm.StopEmit ();
-		this.onTirigger = (count) => {
-
-			if( (count%2)==0 )
-				dualWheel.Accelerate();
-			else
-				dualWheel.ReverseAccelerate();
-
-		};
-		pwm.Reset ( 1f );
-		pwm.StartEmit();
+		leftThlottle = new Thlottle ();
+		rightThlottle = new Thlottle ();
 	}
 
 	public void Accelerate()
 	{
-		thlottleChain.StepUp (ThlottleChain.Direction.Fore);
+		leftThlottle.StepUp ();
+		rightThlottle.StepUp ();
 
-		pwm.StopEmit ();
-		this.onTirigger = (count) => dualWheel.Accelerate ();
-		pwm.Reset ( (float)thlottleChain.level/10f );
-		pwm.StartEmit();
+		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
 	}
 
 	public void ReverseAccelerate()
 	{
-		thlottleChain.StepUp (ThlottleChain.Direction.Back);
+		leftThlottle.StepDown ();
+		rightThlottle.StepDown ();
 
-		pwm.StopEmit ();
-		this.onTirigger = ( count ) => dualWheel.ReverseAccelerate ();
-		pwm.Reset ( (float)thlottleChain.level/10f );
-		pwm.StartEmit();
-
+		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
 	}
 
 	public void Brake()
 	{
-		thlottleChain.Reset ();
-
-		pwm.StopEmit ();
+		leftThlottle.Reset ();
+		rightThlottle.Reset ();
 		dualWheel.Brake ();
 	}
 
-	public void Free()
-	{
-		thlottleChain.Reset ();
 
-		pwm.StopEmit ();
-		dualWheel.Free ();
+	void Log()
+	{
+		var left = leftThlottle.level;
+		var right = rightThlottle.level;
+
+		Console.WriteLine ("{0} / {1}", left.ToString (), right.ToString ());
 	}
+
 
 	public void TurnLeft()
 	{
-		thlottleChain.StepUp (ThlottleChain.Direction.Left);
+		leftThlottle.StepDown ();
+		rightThlottle.StepUp ();
 
-		pwm.StopEmit ();
-		this.onTirigger = ( count ) => dualWheel.TurnLeft ();
-		pwm.Reset ( (float)thlottleChain.level/10f );
-		pwm.StartEmit ();
+		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );	
 	}
 
 	public void TurnRight()
 	{
-		thlottleChain.StepUp (ThlottleChain.Direction.Right);
+		leftThlottle.StepUp ();
+		rightThlottle.StepDown ();
 
-		pwm.StopEmit ();
-		this.onTirigger = ( count ) => dualWheel.TurnRight ();
-		pwm.Reset ( (float)thlottleChain.level/10f );
-		pwm.StartEmit ();
+		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
 	}
 
 	class ThlottleChain
@@ -107,8 +73,6 @@ class TankDriver
 			None,
 			Fore,
 			Back,
-			Left,
-			Right,
 		}
 
 		Thlottle thlottle;
@@ -137,11 +101,22 @@ class TankDriver
 			this.direction = direction;
 		}
 
+		public void StepDown( Direction direction )
+		{
+			if (this.direction == direction)
+				thlottle.StepDown ();
+			else
+				thlottle.Reset ();
+
+			this.direction = direction;
+		}
+
 	}
 
 	class Thlottle
 	{
 		public int level{ get; private set; }
+		public float rate{ get{ return (float)level / 10f;} }
 
 		public void Reset()
 		{
@@ -150,17 +125,18 @@ class TankDriver
 
 		public void StepUp()
 		{
+			if (level > 10)
+				return;
 			level++;
 		}
 
 		public void StepDown()
 		{
+			if (level < -10)
+				return;
 			level--;
 		}
 	}
 }
-
-
-
 
 

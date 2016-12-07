@@ -117,7 +117,7 @@ namespace RaspberryDroneDriver
 
 			var rightWheel = new WheelDriver ( phasePin: connected29, enablePin:connected31 );
 			var leftWheel = new WheelDriver ( phasePin: connected33, enablePin:connected35 );
-			var dualWheel = new DualWheelDriver( leftWheel, rightWheel );
+			var dualWheel = new DualWheelPwmDriver( leftWheel, rightWheel );
 			var tank = new TankDriver( dualWheel );
 
 				var task = Task.Run(async() => {

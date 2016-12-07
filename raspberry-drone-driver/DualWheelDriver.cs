@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 
 public class DualWheelDriver
 {
-	WheelDriver left;
-	WheelDriver right;
+	protected WheelDriver left;
+	protected WheelDriver right;
 
 	public DualWheelDriver ( WheelDriver left, WheelDriver right )
 	{
@@ -13,37 +13,37 @@ public class DualWheelDriver
 		this.right = right;
 	}
 
-	public void Accelerate()
+	public virtual void Accelerate()
 	{
 		left.Accelerate ();
 		right.Accelerate ();
 	}
 
-	public void ReverseAccelerate()
+	public virtual void ReverseAccelerate()
 	{
 		left.ReverseAccelerate ();
 		right.ReverseAccelerate ();
 	}
 
-	public void Brake()
+	public virtual void Brake()
 	{
 		left.Brake ();
 		right.Brake ();
 	}
 
-	public void Free()
+	public virtual void Free()
 	{
 		left.Free ();
 		right.Free ();
 	}
 
-	public void TurnLeft()
+	public virtual void TurnLeft()
 	{
 		left.ReverseAccelerate ();
 		right.Accelerate ();
 	}
 
-	public void TurnRight()
+	public virtual void TurnRight()
 	{
 		left.Accelerate ();
 		right.ReverseAccelerate ();

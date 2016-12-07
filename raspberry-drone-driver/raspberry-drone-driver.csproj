@@ -60,8 +60,8 @@
     <Compile Include="PwmEmitter.cs" />
     <Compile Include="WheelDriver.cs" />
     <Compile Include="DualWheelDriver.cs" />
-    <Compile Include="EmptyClass.cs" />
     <Compile Include="TankDriver.cs" />
+    <Compile Include="DualWheelPwmDriver.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
