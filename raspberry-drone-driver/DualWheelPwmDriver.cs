@@ -58,41 +58,5 @@ public class DualWheelPwmDriver : DualWheelDriver
 	}
 
 
-	/*
-	public void ReverseAccelerate( float leftDuty, float rightDuty )
-	{
-
-		leftPwm.StopEmit ();
-		this.onEmitLeft = (count) => base.left.ReverseAccelerate ();
-		leftPwm.StartEmit ( leftDuty );
-
-		rightPwm.StopEmit ();
-		this.onEmitRight = (count) => base.right.ReverseAccelerate ();
-		rightPwm.StartEmit ( rightDuty );
-
-	}
-	*/
-	public void TurnLeft( float dutyRate )
-	{
-		leftPwm.StopEmit ();
-		this.onEmitLeft = (count) => base.left.ReverseAccelerate ();
-		leftPwm.StartEmit ( dutyRate );
-
-		rightPwm.StopEmit ();
-		this.onEmitRight = (count) => base.right.Accelerate ();
-		rightPwm.StartEmit ( dutyRate );
-	}
-
-	public void TurnRight( float dutyRate )
-	{
-		leftPwm.StopEmit ();
-		this.onEmitLeft = (count) => base.left.Accelerate ();
-		leftPwm.StartEmit ( dutyRate );
-
-		rightPwm.StopEmit ();
-		this.onEmitRight = (count) => base.right.ReverseAccelerate ();
-		rightPwm.StartEmit ( dutyRate );
-	}
-
 }
 

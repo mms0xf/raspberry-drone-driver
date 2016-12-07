@@ -8,29 +8,20 @@ class TankDriver
 	Thlottle leftThlottle;
 	Thlottle rightThlottle;
 
-	public int power{ get{ return leftThlottle.level; } }
+	public string powerText{ get{ return string.Format( "{0}:{1}", leftThlottle.level, rightThlottle.level); } }
+
+	bool isFore{ get{ return (leftThlottle.level + rightThlottle.level) > 0; } }
+	bool isBack{ get{ return (leftThlottle.level + rightThlottle.level) < 0; } }
+	bool isLeft{ get{ return (leftThlottle.level < rightThlottle.level); } }
+	bool isRight{ get{ return (leftThlottle.level > rightThlottle.level); } }
+	int thlottleAverage{ get{ return (int)((leftThlottle.level + rightThlottle.level) / 2f); } }
+
 
 	public TankDriver( DualWheelPwmDriver dualWheel )
 	{
 		this.dualWheel = dualWheel;
 		leftThlottle = new Thlottle ();
 		rightThlottle = new Thlottle ();
-	}
-
-	public void Accelerate()
-	{
-		leftThlottle.StepUp ();
-		rightThlottle.StepUp ();
-
-		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
-	}
-
-	public void ReverseAccelerate()
-	{
-		leftThlottle.StepDown ();
-		rightThlottle.StepDown ();
-
-		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
 	}
 
 	public void Brake()
@@ -40,6 +31,56 @@ class TankDriver
 		dualWheel.Brake ();
 	}
 
+	public void Accelerate()
+	{
+		if (isBack) {
+			Brake ();
+			return;
+		}
+
+		leftThlottle.StepUp ();
+		rightThlottle.StepUp ();
+
+		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
+	}
+
+	public void ReverseAccelerate()
+	{
+		if (isFore) {
+			Brake ();
+			return;
+		}
+
+		leftThlottle.StepDown ();
+		rightThlottle.StepDown ();
+
+		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
+	}
+
+	public void TurnLeft()
+	{
+		if (isRight) {
+			leftThlottle.level = thlottleAverage;
+			rightThlottle.level = thlottleAverage;
+		} else {
+			leftThlottle.StepDown ();
+			rightThlottle.StepUp ();
+		}
+
+		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );	
+	}
+
+	public void TurnRight()
+	{
+		if (isLeft) {
+			leftThlottle.level = thlottleAverage;
+			rightThlottle.level = thlottleAverage;
+		} else {
+			leftThlottle.StepUp ();
+			rightThlottle.StepDown ();
+		}
+		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
+	}
 
 	void Log()
 	{
@@ -47,23 +88,6 @@ class TankDriver
 		var right = rightThlottle.level;
 
 		Console.WriteLine ("{0} / {1}", left.ToString (), right.ToString ());
-	}
-
-
-	public void TurnLeft()
-	{
-		leftThlottle.StepDown ();
-		rightThlottle.StepUp ();
-
-		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );	
-	}
-
-	public void TurnRight()
-	{
-		leftThlottle.StepUp ();
-		rightThlottle.StepDown ();
-
-		dualWheel.Accelerate ( leftThlottle.rate, rightThlottle.rate );
 	}
 
 	class ThlottleChain
@@ -115,7 +139,14 @@ class TankDriver
 
 	class Thlottle
 	{
-		public int level{ get; private set; }
+		int _level;
+		public int level{ 
+			get{ return _level; } 
+			set{ 
+				if (IsLimit (value))	return;
+				_level = value;
+			}
+		}
 		public float rate{ get{ return (float)level / 10f;} }
 
 		public void Reset()
@@ -123,17 +154,24 @@ class TankDriver
 			level = 0;
 		}
 
+		bool IsLimit( int amount )
+		{
+			if (amount > 10)
+				return true;
+
+			if (amount < -10)
+				return true;
+
+			return false;
+		}
+
 		public void StepUp()
 		{
-			if (level > 10)
-				return;
 			level++;
 		}
 
 		public void StepDown()
 		{
-			if (level < -10)
-				return;
 			level--;
 		}
 	}

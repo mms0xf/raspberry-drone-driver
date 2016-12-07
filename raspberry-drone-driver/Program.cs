@@ -136,22 +136,22 @@ namespace RaspberryDroneDriver
 						case ConsoleKey.S:
 						case ConsoleKey.DownArrow:
 							tank.ReverseAccelerate();
-							Console.WriteLine ("console back "+ tank.power );
+							Console.WriteLine ("console back "+ tank.powerText );
 							break;
 						case ConsoleKey.W:
 						case ConsoleKey.UpArrow:
 							tank.Accelerate();
-							Console.WriteLine ("console fore "+ tank.power);
+							Console.WriteLine ("console fore "+ tank.powerText);
 							break;
 						case ConsoleKey.A:
 						case ConsoleKey.LeftArrow:
 							tank.TurnLeft();
-							Console.WriteLine ("console left "+ tank.power);
+							Console.WriteLine ("console left "+ tank.powerText);
 							break;
 						case ConsoleKey.D:
 						case ConsoleKey.RightArrow:
 							tank.TurnRight();
-							Console.WriteLine ("console right "+ tank.power);
+							Console.WriteLine ("console right "+ tank.powerText);
 							break;
 						case ConsoleKey.Spacebar:
 							tank.Brake();

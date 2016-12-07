@@ -13,7 +13,7 @@ public class PwmEmitter : IDisposable
 	Action<bool,int> onUpdate;
 
 	// input ex: connection.Pins[ConnectorPin.P1Pin11]
-	public PwmEmitter( Action<bool,int> onUpdate, float dutyRate=1f )
+	public PwmEmitter( Action<bool,int> onUpdate, float dutyRate=0.5f )
 	{
 		this.onUpdate = onUpdate;
 		SetDutyRate ( dutyRate );
