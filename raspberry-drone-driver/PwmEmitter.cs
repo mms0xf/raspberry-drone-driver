@@ -1,52 +1,60 @@
-using System.Timers;
+// using System.Timers;
 using System;
+using Raspberry.Timers;
+using System.Diagnostics;
 
 public class PwmEmitter : IDisposable
 {
-	const int pulasResolution = 10; //	detect 10 times in one frequency
+	const int pulasResolution = 1000000; //	detect 10 times in one frequency
 
-	Timer timer;
+	HighResolutionTimer timer;
 
-	Action onStart;
+	Action onStarted;
 	Action onStop;
 
-	Action<bool,int> onUpdate;
+	Action<bool,long> onUpdate;
+
+	Stopwatch stopwatch;
 
 	// input ex: connection.Pins[ConnectorPin.P1Pin11]
-	public PwmEmitter( Action<bool,int> onUpdate, float dutyRate=0.5f )
+	public PwmEmitter( Action<bool,long> onUpdate, float dutyRate=0.5f )
 	{
+		stopwatch = new Stopwatch ();
+		timer = new HighResolutionTimer();
 		this.onUpdate = onUpdate;
 		SetDutyRate ( dutyRate );
 	}
 
 	public void SetDutyRate( float dutyRate )
 	{
-		int threshold = (int)Math.Max (0f, dutyRate * pulasResolution);
-		int elapsedCount = 0;
+		long oneCycleTicks = 10000 * 15;
+		long threshold = (long)Math.Max (0, oneCycleTicks * dutyRate);
 
-		onStart = () => elapsedCount = 0;
-		onStop = () => this.onUpdate(false,elapsedCount);
+		bool prevFlag = false;
 
-		// pulased
-		//			timer = new Timer ( 1 );	// 1000Hz
-		timer?.Dispose();
-		timer = new Timer ( 5 );	// 1000 = 1Hz
-		timer.Elapsed += (object sender, ElapsedEventArgs e) => {
-			if( elapsedCount < threshold )
-				this.onUpdate(true,elapsedCount);
-			else
-				this.onUpdate(false,elapsedCount);
-			elapsedCount++;
+		onStarted = () => prevFlag = false;
+		onStop = () => this.onUpdate(false,stopwatch.ElapsedTicks);
 
-			if( elapsedCount >= pulasResolution )
-				elapsedCount=0;
+		timer?.Stop();
+		timer.Interval = TimeSpan.FromTicks ( 10000 * 15 / pulasResolution );
+		timer.Action = () => {
+			var currentInOneCycle = (stopwatch.ElapsedTicks % oneCycleTicks );
+			var isOveredThewshold = ( currentInOneCycle < threshold );
+
+			if( prevFlag != isOveredThewshold )
+			{
+				this.onUpdate(isOveredThewshold, stopwatch.ElapsedTicks);
+				prevFlag = isOveredThewshold;
+			}
+//			Console.WriteLine("{0:0.00} {1} {2} {3} {4}",
+//				((float)currentInOneCycle/oneCycleTicks), isOveredThewshold, threshold, currentInOneCycle, stopwatch.ElapsedTicks );
 		};
 
 	}
 
 	public void Dispose ()
 	{
-		timer.Dispose ();
+		timer?.Stop ();
 	}
 
 	public void StartEmit( float dutyRate )
@@ -57,9 +65,10 @@ public class PwmEmitter : IDisposable
 
 	public void StartEmit()
 	{
-		timer.Start ();
-		if (onStart != null)
-			onStart ();
+		stopwatch.Restart ();
+		timer.Start (TimeSpan.Zero);
+		if (onStarted != null)
+			onStarted ();
 	}
 
 	public void StopEmit()

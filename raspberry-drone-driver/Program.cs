@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.IO;
 using System.Linq;
+using System.Diagnostics;
 
 
 namespace RaspberryDroneDriver
@@ -101,7 +102,9 @@ namespace RaspberryDroneDriver
 			                                     ConnectorPin.P1Pin33.Output (),
 			                                     ConnectorPin.P1Pin35.Output (),
 
-			                                     ConnectorPin.P1Pin37.Output ()
+			                                     ConnectorPin.P1Pin37.Output (),
+																												ConnectorPin.P1Pin36.Output (),
+																												ConnectorPin.P1Pin38.Output ()
 																											);
 
 			var connected29 = connection.Pins [ConnectorPin.P1Pin29];
@@ -112,13 +115,28 @@ namespace RaspberryDroneDriver
 
 			var connected37 = connection.Pins [ConnectorPin.P1Pin37];
 
+			var connected36 = connection.Pins [ConnectorPin.P1Pin36];	// survo signal2
+			var connected38 = connection.Pins [ConnectorPin.P1Pin38];	// survo signal1
+
 			connected37.Enabled = true;	// vcc on
+
+			connected36.Enabled = true;	// dummy
+
+			var stopwatch = new Stopwatch ();
+			stopwatch.Start ();
+
+			var survoEmitter = new PwmEmitter ((flag, count) => {
+
+				connected38.Enabled = flag;
+			});
 
 
 			var rightWheel = new WheelDriver ( phasePin: connected29, enablePin:connected31 );
 			var leftWheel = new WheelDriver ( phasePin: connected33, enablePin:connected35 );
 			var dualWheel = new DualWheelPwmDriver( leftWheel, rightWheel );
 			var tank = new TankDriver( dualWheel );
+
+
 
 				var task = Task.Run(async() => {
 				while(true)
@@ -133,6 +151,20 @@ namespace RaspberryDroneDriver
 						case ConsoleKey.Q:
 							Console.WriteLine (" console exit");
 							return;
+
+						case ConsoleKey.I:
+							survoEmitter.StartEmit( 0.05f );	// clockwise 90deg
+							Console.WriteLine (" survo 0.05");
+							break;
+						case ConsoleKey.O:
+							survoEmitter.StartEmit( 0.1f );
+							Console.WriteLine (" survo 0.1");
+							break;
+						case ConsoleKey.P:
+							survoEmitter.StartEmit( 0.2f );	// anticlockwise 90deg
+							Console.WriteLine (" survo 0.2");
+							break;
+
 						case ConsoleKey.S:
 						case ConsoleKey.DownArrow:
 							tank.ReverseAccelerate();
@@ -168,6 +200,8 @@ namespace RaspberryDroneDriver
 			await task;
 
 			connection.Close ();
+
+			survoEmitter.Dispose ();
 		}
 
 

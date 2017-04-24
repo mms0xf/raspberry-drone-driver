@@ -5,8 +5,8 @@ public class DualWheelPwmDriver : DualWheelDriver
 
 	PwmEmitter leftPwm;
 	PwmEmitter rightPwm;
-	Action<int> onEmitLeft;
-	Action<int> onEmitRight;
+	Action<long> onEmitLeft;
+	Action<long> onEmitRight;
 
 	public DualWheelPwmDriver( WheelDriver left, WheelDriver right ) : base( left, right )
 	{
