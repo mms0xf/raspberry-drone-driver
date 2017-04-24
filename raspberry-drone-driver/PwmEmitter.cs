@@ -27,7 +27,7 @@ public class PwmEmitter : IDisposable
 
 	public void SetDutyRate( float dutyRate )
 	{
-		long oneCycleTicks = 10000 * 15;
+		long oneCycleTicks = TimeSpan.FromMilliseconds(15).Ticks;
 		long threshold = (long)Math.Max (0, oneCycleTicks * dutyRate);
 
 		bool prevFlag = false;
@@ -36,7 +36,7 @@ public class PwmEmitter : IDisposable
 		onStop = () => this.onUpdate(false,stopwatch.ElapsedTicks);
 
 		timer?.Stop();
-		timer.Interval = TimeSpan.FromTicks ( 10000 * 15 / pulasResolution );
+		timer.Interval = TimeSpan.FromTicks ( oneCycleTicks / pulasResolution );
 		timer.Action = () => {
 			var currentInOneCycle = (stopwatch.ElapsedTicks % oneCycleTicks );
 			var isOveredThewshold = ( currentInOneCycle < threshold );
