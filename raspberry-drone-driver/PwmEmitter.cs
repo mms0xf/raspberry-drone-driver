@@ -5,7 +5,29 @@ using System.Diagnostics;
 
 public class PwmEmitter : IDisposable
 {
-	const int pulasResolution = 1000000; //	detect 10 times in one frequency
+	public class Setting
+	{
+		public int pulasResolution = 1000000;//	detect times in one frequency
+		public float dutyRate=0.5f;
+		public long oneCycleTicks;
+
+		public long thresholdTicks {
+			get{ return (long)Math.Max (0, oneCycleTicks * dutyRate); } 
+		}
+
+		public TimeSpan intervalSpan {
+			get{ return TimeSpan.FromTicks (oneCycleTicks / pulasResolution); }
+		}
+			
+		public Setting(  )
+		{
+			oneCycleTicks = TimeSpan.FromMilliseconds(15).Ticks;
+		}
+	}
+
+	public Setting setting{ get; private set; }
+
+//	const int pulasResolution = 1000000; //	detect times in one frequency
 
 	HighResolutionTimer timer;
 
@@ -17,18 +39,20 @@ public class PwmEmitter : IDisposable
 	Stopwatch stopwatch;
 
 	// input ex: connection.Pins[ConnectorPin.P1Pin11]
-	public PwmEmitter( Action<bool,long> onUpdate, float dutyRate=0.5f )
+	public PwmEmitter( Action<bool,long> onUpdate, Setting setting=null )
 	{
-		stopwatch = new Stopwatch ();
-		timer = new HighResolutionTimer();
+		this.stopwatch = new Stopwatch ();
+		this.timer = new HighResolutionTimer();
+
+		this.setting = setting ?? new Setting ();
+
 		this.onUpdate = onUpdate;
-		SetDutyRate ( dutyRate );
+		SetDutyRate ( 0.5f );
 	}
 
 	public void SetDutyRate( float dutyRate )
 	{
-		long oneCycleTicks = TimeSpan.FromMilliseconds(15).Ticks;
-		long threshold = (long)Math.Max (0, oneCycleTicks * dutyRate);
+		setting.dutyRate = dutyRate;
 
 		bool prevFlag = false;
 
@@ -36,10 +60,10 @@ public class PwmEmitter : IDisposable
 		onStop = () => this.onUpdate(false,stopwatch.ElapsedTicks);
 
 		timer?.Stop();
-		timer.Interval = TimeSpan.FromTicks ( oneCycleTicks / pulasResolution );
+		timer.Interval = setting.intervalSpan;
 		timer.Action = () => {
-			var currentInOneCycle = (stopwatch.ElapsedTicks % oneCycleTicks );
-			var isOveredThewshold = ( currentInOneCycle < threshold );
+			var currentInOneCycle = (stopwatch.ElapsedTicks % setting.oneCycleTicks );
+			var isOveredThewshold = ( currentInOneCycle < setting.thresholdTicks );
 
 			if( prevFlag != isOveredThewshold )
 			{

@@ -10,19 +10,27 @@ public class DualWheelPwmDriver : DualWheelDriver
 
 	public DualWheelPwmDriver( WheelDriver left, WheelDriver right ) : base( left, right )
 	{
+		var settingLeft = new PwmEmitter.Setting ();
+		settingLeft.oneCycleTicks = TimeSpan.FromSeconds (1).Ticks;
+		settingLeft.pulasResolution = 10;
+
+		var settingRight = new PwmEmitter.Setting ();
+		settingRight.oneCycleTicks = TimeSpan.FromSeconds (1).Ticks;
+		settingRight.pulasResolution = 10;
+
 		leftPwm = new PwmEmitter ( (state,count)=>{
 			if( state )
 				onEmitLeft?.Invoke( count );
 			else
 				base.left.Free();
-		} );
+		} ,settingLeft);
 
 		rightPwm = new PwmEmitter ( (state,count)=>{
 			if( state )
 				onEmitRight?.Invoke( count );
 			else
 				base.right.Free();
-		} );
+		} ,settingRight);
 	}
 
 	public override void Brake ()
