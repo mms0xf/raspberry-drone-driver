@@ -120,15 +120,16 @@ namespace RaspberryDroneDriver
 
 			connected37.Enabled = true;	// vcc on
 
-			connected36.Enabled = true;	// dummy
-
 			var stopwatch = new Stopwatch ();
 			stopwatch.Start ();
 
-			var survoEmitter = new PwmEmitter ((flag, count) => {
-
-				connected38.Enabled = flag;
+			var yawPitchSurvo = new YawPitchSurvo ((flag, counnt) => {
+				connected38.Enabled = flag;	// yaw
+			}, 
+				(flag, count) => {
+					connected36.Enabled = flag;	// pitch
 			});
+
 
 
 			var rightWheel = new WheelDriver ( phasePin: connected29, enablePin:connected31 );
@@ -141,6 +142,7 @@ namespace RaspberryDroneDriver
 				var task = Task.Run(async() => {
 				while(true)
 				{
+					yawPitchSurvo.Update();
 
 					if( Console.KeyAvailable )
 					{
@@ -152,17 +154,26 @@ namespace RaspberryDroneDriver
 							Console.WriteLine (" console exit");
 							return;
 
-						case ConsoleKey.I:
-							survoEmitter.StartEmit( 0.05f );	// clockwise 90deg
-							Console.WriteLine (" survo 0.05");
-							break;
-						case ConsoleKey.O:
-							survoEmitter.StartEmit( 0.1f );
-							Console.WriteLine (" survo 0.1");
-							break;
 						case ConsoleKey.P:
-							survoEmitter.StartEmit( 0.2f );	// anticlockwise 90deg
-							Console.WriteLine (" survo 0.2");
+							yawPitchSurvo.Fold();
+							Console.WriteLine (" Fold");
+							break;
+
+						case ConsoleKey.J:
+							yawPitchSurvo.StepYawLeft(false);
+							Console.WriteLine (" StepYawLeft");
+							break;
+						case ConsoleKey.L:
+							yawPitchSurvo.StepYawRight(false);
+							Console.WriteLine (" StepYawRight");
+							break;
+						case ConsoleKey.I:
+							yawPitchSurvo.StepPitchDown(false);
+							Console.WriteLine (" StepPitchDown");
+							break;
+						case ConsoleKey.K:
+							yawPitchSurvo.StepPitchUp(false);
+							Console.WriteLine (" StepPitchUp");
 							break;
 
 						case ConsoleKey.S:
@@ -201,7 +212,7 @@ namespace RaspberryDroneDriver
 
 			connection.Close ();
 
-			survoEmitter.Dispose ();
+			yawPitchSurvo.Dispose ();
 		}
 
 

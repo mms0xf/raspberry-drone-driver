@@ -62,6 +62,7 @@
     <Compile Include="DualWheelDriver.cs" />
     <Compile Include="TankDriver.cs" />
     <Compile Include="DualWheelPwmDriver.cs" />
+    <Compile Include="YawPitchSurvo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
